@@ -1,9 +1,3 @@
-
-;; Added by Package.el.  This must come before configurations of
-;; installed packages.  Don't delete this line.  If you don't want it,
-;; just comment it out by adding a semicolon to the start of the line.
-;; You may delete these explanatory comments.
-
 (require 'package)
 (load "package")
 (package-initialize)
@@ -13,20 +7,20 @@
 (package-initialize)
 
 
-(defvar matt/packages '(projectile
-			neotree
-			ivy
-			powerline
-			material-theme
-			rust-mode
-			lsp-ui
-			imenu-list
-			flycheck-rust
-			elpy
-			company-lsp)
-  "Default packages")
 
-
+(defvar packages '(projectile
+		   neotree
+		   ivy
+		   powerline
+		   material-theme
+		   rust-mode
+		   lsp-ui
+		   imenu-list
+		   flycheck-rust
+		   elpy
+		   company-lsp
+		   autopair)
+  "Def packages")
 
 (load-theme 'material t)
 
@@ -53,11 +47,8 @@
 ;; invert the navigation direction if the the completion popup-isearch-match
 ;; is displayed on top (happens near the bottom of windows)
 (setq company-tooltip-flip-when-above t)
-
-
-
-
 (global-company-mode 1)
+
 
 ;;IVY
 (ivy-mode 1)
@@ -90,9 +81,6 @@
 (setq auto-mode-alist
    (cons '("\.md" . markdown-mode) auto-mode-alist))
 
-
-
-
 ;yaml
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\.yml\'" . yaml-mode))
@@ -120,11 +108,7 @@
 (require 'company-lsp)
 (push 'company-lsp company-backends)
 
-
-
-
-
-;;PYthon
+;;Python
 (require 'elpy)
 (elpy-enable)
 (when (load "flycheck" t t)
@@ -240,21 +224,3 @@
 
 
 (global-set-key "\C-t" 'transpose-sexps)
-
-
-
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (projectile neotree smex helm ivy powerline material-theme rust-mode lsp-ui imenu-list flycheck-rust elpy eglot company-lsp))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
