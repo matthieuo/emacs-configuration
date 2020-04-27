@@ -28,16 +28,33 @@
 (require 'powerline)
 (powerline-default-theme)
 
+
+;; NEOTREE, open root consistent with projectile
 (require 'neotree)
-(global-set-key [f8] 'neotree-toggle)
+  (defun neotree-project-dir ()
+    "Open NeoTree using the git root."
+    (interactive)
+    (let ((project-dir (projectile-project-root))
+          (file-name (buffer-file-name)))
+      (neotree-toggle)
+      (if project-dir
+          (if (neo-global--window-exists-p)
+              (progn
+                (neotree-dir project-dir)
+                (neotree-find file-name)))
+        (message "Could not find git project root."))))
+
+(global-set-key [f8] 'neotree-project-dir)
 
 (require 'autopair)
 (autopair-global-mode)
 
+;; PROJECTILE
 (require 'projectile)
-(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+;;(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 (projectile-mode +1)
+(setq projectile-completion-system 'ivy)
 
 ;;company
 (setq company-idle-delay 0.0)
@@ -75,6 +92,11 @@
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "C-x g") 'magit-status)
 
+;; centaur tabs
+;(require 'centaur-tabs)
+;(centaur-tabs-mode t)
+;(global-set-key (kbd "C-<prior>")  'centaur-tabs-backward)
+;(global-set-key (kbd "C-<next>") 'centaur-tabs-forward)
 
 
 ; ----markdown mode
@@ -248,10 +270,12 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust elpy company-lsp autopair))))
+    (centaur-tabs counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust elpy company-lsp autopair))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+
