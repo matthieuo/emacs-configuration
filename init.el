@@ -19,8 +19,7 @@
 		   imenu-list
 		   flycheck-rust
 		   elpy
-		   company-lsp
-		   autopair)
+		   company-lsp)
   "Def packages")
 
 (load-theme 'material t)
@@ -31,23 +30,24 @@
 
 ;; NEOTREE, open root consistent with projectile
 (require 'neotree)
-  (defun neotree-project-dir ()
-    "Open NeoTree using the git root."
-    (interactive)
-    (let ((project-dir (projectile-project-root))
-          (file-name (buffer-file-name)))
-      (neotree-toggle)
-      (if project-dir
-          (if (neo-global--window-exists-p)
-              (progn
-                (neotree-dir project-dir)
-                (neotree-find file-name)))
-        (message "Could not find git project root."))))
+(defun neotree-project-dir ()
+  "Open NeoTree using the git root."
+  (interactive)
+  (let ((project-dir (projectile-project-root))
+	(file-name (buffer-file-name)))
+    (neotree-toggle)
+    (if project-dir
+	(if (neo-global--window-exists-p)
+	    (progn
+	      (neotree-dir project-dir)
+	      (neotree-find file-name)))
+     (message "Could not find git project root."))))
 
 (global-set-key [f8] 'neotree-project-dir)
 
-(require 'autopair)
-(autopair-global-mode)
+
+;; autocomplete paired brackets
+(electric-pair-mode 1)
 
 ;; PROJECTILE
 (require 'projectile)
@@ -66,7 +66,7 @@
 ;; is displayed on top (happens near the bottom of windows)
 (setq company-tooltip-flip-when-above t)
 (setq company-selection-wrap-around t)
-(global-company-mode 1)
+;;(global-company-mode 1)
 
 
 ;;IVY
@@ -117,6 +117,9 @@
 (require 'flycheck)
 (add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
 
+
+
+;; (setq flycheck-highlighting-mode 'lines)
 ; LSP for rust
 (require 'rust-mode)
 (require 'lsp-ui)
@@ -137,14 +140,23 @@
 (elpy-enable)
 (when (load "flycheck" t t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+  (add-hook 'elpy-mode-hook 'flycheck-mode) (add-hook 'elpy-mode-hook 'flyspell-prog-mode))
+
+(add-to-list 'flycheck-disabled-checkers 'python-pylint)
 
 (define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-;auctex
+;; auctex - configuration
 (load "auctex.el" nil t t)
-(load "preview-latex.el" nil t t)
+(setq TeX-parse-self t) ; Enable parse on load.
+(setq TeX-auto-save t) ; Enable parse on save.
+(add-hook 'LaTeX-mode-hook 'visual-line-mode)
+(add-hook 'LaTeX-mode-hook 'flyspell-mode)
+(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+(setq reftex-plug-into-AUCTeX t)
 
 
+;; -- general config
 
 (setq-default font-lock-maximum-decoration t)
 
@@ -178,7 +190,7 @@
 
 ;;##########################################################
 ;; Langue
- (set-terminal-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
 ;(set-keyboard-coding-system 'utf-8)
 (set-language-environment 'UTF-8)
 
@@ -190,7 +202,7 @@
 
 
 ;; la langue du dictionnaire
-(setq ispell-dictionary "francais")
+(setq ispell-dictionary "english")
 
 
 ;; la completion respecte la casse
@@ -226,7 +238,7 @@
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
 ;; Autre type de completion pour le mini-buffer
-(icomplete-mode 99)
+;; (icomplete-mode 99)
 
 ;; Alias y pour yes et n pour no
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -268,14 +280,18 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
  '(package-selected-packages
    (quote
-    (centaur-tabs counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust elpy company-lsp autopair))))
+    (auctex centaur-tabs counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust elpy company-lsp autopair)))
+ '(show-paren-mode t)
+ '(tool-bar-mode nil))
+
+
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
-
-
+ '(default ((t (:family "Source Code Pro" :foundry "ADBO" :slant normal :weight normal :height 130 :width normal)))))
