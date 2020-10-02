@@ -1,6 +1,6 @@
 (require 'package)
 (load "package")
-(package-initialize)
+;(package-initialize)
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/") t)
 
