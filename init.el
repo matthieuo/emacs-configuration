@@ -7,25 +7,66 @@
 (package-initialize)
 
 
+;; If there are no archived package contents, refresh them
 
-(defvar packages '(projectile
-		   magit
-		   neotree
-		   ivy
-		   powerline
-		   material-theme
-		   rust-mode
-		   lsp-ui
-		   imenu-list
-		   flycheck-rust
-		   elpy
-		   company-lsp)
-  "Def packages")
+(when (not package-archive-contents)
+  (package-refresh-contents))
 
-(load-theme 'material t)
+;; Installs packages
+;; myPackages contains a list of package names
 
-(require 'powerline)
-(powerline-default-theme)
+(defvar myPackages
+  '(better-defaults                 ;; Set up some better Emacs defaults
+    material-theme                  ;; Theme
+    projectile
+    magit
+    neotree
+    ivy
+    powerline
+    rust-mode
+    lsp-ui
+    imenu-list
+    flycheck-rust
+    elpy
+    company-lsp                 
+    blacken
+    yaml-mode
+    highlight-indent-guides
+    auctex
+    )
+  )
+
+;; Scans the list in myPackages
+;; If the package listed is not already installed, install it
+
+(mapc #'(lambda (package)
+          (unless (package-installed-p package)
+            (package-install package)))
+      myPackages)
+
+
+(setq inhibit-startup-message t)    ;; Hide the startup message
+(load-theme 'material t)            ;; Load material theme
+
+(require 'display-line-numbers)
+(defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
+  "Major modes on which to disable the linum mode, exempts them from global requirement"
+  :group 'display-line-numbers
+  :type 'list
+  :version "green")
+
+(defun display-line-numbers--turn-on ()
+  "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
+  (if (and
+       (not (member major-mode display-line-numbers-exempt-modes))
+       (not (minibufferp)))
+      (display-line-numbers-mode)))
+
+(global-display-line-numbers-mode)
+
+
+;(require 'powerline)
+;(powerline-default-theme)
 
 
 ;; NEOTREE, open root consistent with projectile
@@ -46,8 +87,15 @@
 (global-set-key [f8] 'neotree-project-dir)
 
 
+;highligt indents
+(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+
+(setq highlight-indent-guides-delay 0)
+(setq highlight-indent-guides-method 'column)
+(setq highlight-indent-guides-responsive 'top)
+
 ;; autocomplete paired brackets
-(electric-pair-mode 1)
+;;(electric-pair-mode 1)
 
 ;; PROJECTILE
 (require 'projectile)
@@ -129,22 +177,53 @@
 (add-hook 'rust-mode-hook #'lsp)
 
 ;; tell company to complete on tabs instead of sitting there like a moron
-(define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+;;(define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 
 ;; autocompletions for lsp (available with melpa enabled)
-(require 'company-lsp)
-(push 'company-lsp company-backends)
+;;;(require 'company-lsp)
+;;;;(push 'company-lsp company-backends)
 
 ;;Python
 (require 'elpy)
 (elpy-enable)
 (when (load "flycheck" t t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode) (add-hook 'elpy-mode-hook 'flyspell-prog-mode))
+  (add-hook 'elpy-mode-hook 'flycheck-mode)) ; (add-hook 'elpy-mode-hook 'flyspell-prog-mode))
+(setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))
+
 
 (add-to-list 'flycheck-disabled-checkers 'python-pylint)
 
-(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+(setq tab-always-indent 'complete)
+
+
+(setq python-shell-interpreter "jupyter"
+      python-shell-interpreter-args "console --simple-prompt"
+      python-shell-prompt-detect-failure-warning nil)
+(add-to-list 'python-shell-completion-native-disabled-interpreters
+             "jupyter")
+
+(advice-add 'elpy-shell--insert-and-font-lock
+            :around (lambda (f string face &optional no-font-lock)
+                      (if (not (eq face 'comint-highlight-input))
+                          (funcall f string face no-font-lock)
+                        (funcall f string face t)
+                        (python-shell-font-lock-post-command-hook))))
+
+(advice-add 'comint-send-input
+            :around (lambda (f &rest args)
+                      (if (eq major-mode 'inferior-python-mode)
+                          (cl-letf ((g (symbol-function 'add-text-properties))
+                                    ((symbol-function 'add-text-properties)
+                                     (lambda (start end properties &optional object)
+                                       (unless (eq (nth 3 properties) 'comint-highlight-input)
+                                         (funcall g start end properties object)))))
+                            (apply f args))
+                        (apply f args))))
+
+
+
 ;; auctex - configuration
 (load "auctex.el" nil t t)
 (setq TeX-parse-self t) ; Enable parse on load.
@@ -165,7 +244,7 @@
 (line-number-mode t)
 (require 'paren)
 (show-paren-mode)
-
+(setq show-paren-delay 0)
 
 ;pour suprimer selection avec touche
 (delete-selection-mode t)
@@ -280,13 +359,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(column-number-mode t)
  '(package-selected-packages
-   (quote
-    (auctex centaur-tabs counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust elpy company-lsp autopair)))
- '(show-paren-mode t)
- '(tool-bar-mode nil))
-
+   '(auctex centaur-tabs counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust elpy company-lsp autopair)))
 
 
 (custom-set-faces
@@ -294,4 +368,5 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Source Code Pro" :foundry "ADBO" :slant normal :weight normal :height 130 :width normal)))))
+ '(default ((t (:family "Source Code Pro" :foundry "ADBO" :slant normal :weight normal :height 91 :width normal))))
+ '(line-number-current-line ((t (:inherit default :foreground "chartreuse")))))
