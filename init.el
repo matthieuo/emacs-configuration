@@ -22,10 +22,11 @@
     magit
     neotree
     ivy
+    counsel
+    swiper
     powerline
     rust-mode
     lsp-ui
-    imenu-list
     flycheck-rust
     elpy
     company-lsp                 
@@ -89,9 +90,8 @@
 
 ;highligt indents
 (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
-
 (setq highlight-indent-guides-delay 0)
-(setq highlight-indent-guides-method 'column)
+(setq highlight-indent-guides-method 'character)
 (setq highlight-indent-guides-responsive 'top)
 
 ;; autocomplete paired brackets
@@ -161,10 +161,8 @@
        (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 
 ;flycheck
-
 (require 'flycheck)
 (add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
-
 
 
 ;; (setq flycheck-highlighting-mode 'lines)
@@ -188,7 +186,7 @@
 (elpy-enable)
 (when (load "flycheck" t t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode)) ; (add-hook 'elpy-mode-hook 'flyspell-prog-mode))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
 (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))
 
 
