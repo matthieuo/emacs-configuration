@@ -1,6 +1,6 @@
 (require 'package)
 (load "package")
-;(package-initialize)
+
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/") t)
 
@@ -45,8 +45,6 @@
             (package-install package)))
       myPackages)
 
-
-(setq inhibit-startup-message t)    ;; Hide the startup message
 (load-theme 'material t)            ;; Load material theme
 
 (require 'display-line-numbers)
@@ -64,10 +62,6 @@
       (display-line-numbers-mode)))
 
 (global-display-line-numbers-mode)
-
-
-;(require 'powerline)
-;(powerline-default-theme)
 
 
 ;; NEOTREE, open root consistent with projectile
@@ -140,12 +134,6 @@
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "C-x g") 'magit-status)
 
-;; centaur tabs
-;(require 'centaur-tabs)
-;(centaur-tabs-mode t)
-;(global-set-key (kbd "C-<prior>")  'centaur-tabs-backward)
-;(global-set-key (kbd "C-<next>") 'centaur-tabs-forward)
-
 
 ; ----markdown mode
 (autoload 'markdown-mode "markdown-mode.el"
@@ -160,9 +148,15 @@
       '(lambda ()
        (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 
-;flycheck
+;;flycheck
 (require 'flycheck)
 (add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
+
+
+
+;;flyspell
+(setq flyspell-default-dictionary "english") 
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
 
 
 ;; (setq flycheck-highlighting-mode 'lines)
@@ -189,8 +183,12 @@
   (add-hook 'elpy-mode-hook 'flycheck-mode))
 (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))
 
+;disable pylint as it is slow
+(setq-default flycheck-disabled-checkers '(python-pylint))
 
-(add-to-list 'flycheck-disabled-checkers 'python-pylint)
+;enable both flake8 and pyright
+(flycheck-add-next-checker 'python-flake8 'python-pyright)
+
 
 ;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 (setq tab-always-indent 'complete)
@@ -314,8 +312,6 @@
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
-;; Autre type de completion pour le mini-buffer
-;; (icomplete-mode 99)
 
 ;; Alias y pour yes et n pour no
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -334,7 +330,7 @@
 (unify-8859-on-encoding-mode 1) 
 
 
-(setq flyspell-default-dictionary "francais") 
+
 
 (global-set-key (kbd "C-s") 'swiper-isearch)
 (global-set-key (kbd "M-x") 'counsel-M-x)
