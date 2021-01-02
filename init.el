@@ -48,7 +48,7 @@
 (load-theme 'material t)            ;; Load material theme
 
 (require 'display-line-numbers)
-(defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
+(defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode org-mode occur-mode)
   "Major modes on which to disable the linum mode, exempts them from global requirement"
   :group 'display-line-numbers
   :type 'list
@@ -157,7 +157,7 @@
 ;;flyspell
 (setq flyspell-default-dictionary "english") 
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-
+(add-hook 'markdown-mode-hook 'flyspell-mode)
 
 ;; (setq flycheck-highlighting-mode 'lines)
 ; LSP for rust
