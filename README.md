@@ -2,7 +2,7 @@
 My Emacs configuration. The file `init.el` should be added to the `.emacs.d` directory.
 
 The following screenshot shows the editing of a python file
-![Python editing](sample.png)
+![Python editing](sample.png | width=100)
 
 
 ## Packages
