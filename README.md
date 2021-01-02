@@ -30,13 +30,14 @@ The followings packages are needed and automatically installed form ELPA if abse
 ## Features
 
 ### Language support
-`flycheck` and company auto-completion are enabled.
+`company` auto-completion and `flycheck` are enabled.
 
 For python, `elpy` is loaded and `flake8` and `pyright` are enabled with `flycheck`.
 
-Rust support is configured with LSP
+Rust support is configured with LSP.
 
 ### IDE
 
 Project management is enabled with `projectile` (prefix key is <kbd>C-c p</kbd>)
+
 `magit` can be launched with <kbd>C-x g</kbd> for any git manipulations.
