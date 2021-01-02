@@ -6,9 +6,7 @@
 
 (package-initialize)
 
-
 ;; If there are no archived package contents, refresh them
-
 (when (not package-archive-contents)
   (package-refresh-contents))
 
@@ -39,7 +37,6 @@
 
 ;; Scans the list in myPackages
 ;; If the package listed is not already installed, install it
-
 (mapc #'(lambda (package)
           (unless (package-installed-p package)
             (package-install package)))
@@ -88,12 +85,8 @@
 (setq highlight-indent-guides-method 'character)
 (setq highlight-indent-guides-responsive 'top)
 
-;; autocomplete paired brackets
-;;(electric-pair-mode 1)
-
 ;; PROJECTILE
 (require 'projectile)
-;;(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 (projectile-mode +1)
 (setq projectile-completion-system 'ivy)
@@ -108,20 +101,11 @@
 ;; is displayed on top (happens near the bottom of windows)
 (setq company-tooltip-flip-when-above t)
 (setq company-selection-wrap-around t)
-;;(global-company-mode 1)
-
 
 ;;IVY
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
 (setq ivy-count-format "(%d/%d) ")
-
-
-;; enable IDO
-;(ido-mode t)
-;(setq ido-enable-flex-matching t
-;      ido-use-virtual-buffers t)
-
 
 ;; selection and clipoard
 (delete-selection-mode t)
@@ -133,7 +117,6 @@
 (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "C-x g") 'magit-status)
-
 
 ; ----markdown mode
 (autoload 'markdown-mode "markdown-mode.el"
@@ -152,14 +135,11 @@
 (require 'flycheck)
 (add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
 
-
-
 ;;flyspell
 (setq flyspell-default-dictionary "english") 
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
 (add-hook 'markdown-mode-hook 'flyspell-mode)
 
-;; (setq flycheck-highlighting-mode 'lines)
 ; LSP for rust
 (require 'rust-mode)
 (require 'lsp-ui)
@@ -168,12 +148,8 @@
 (require 'lsp-mode)
 (add-hook 'rust-mode-hook #'lsp)
 
-;; tell company to complete on tabs instead of sitting there like a moron
+;; tell company to complete on tabs 
 ;;(define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-
-;; autocompletions for lsp (available with melpa enabled)
-;;;(require 'company-lsp)
-;;;;(push 'company-lsp company-backends)
 
 ;;Python
 (require 'elpy)
@@ -189,10 +165,8 @@
 ;enable both flake8 and pyright
 (flycheck-add-next-checker 'python-flake8 'python-pyright)
 
-
 ;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 (setq tab-always-indent 'complete)
-
 
 (setq python-shell-interpreter "jupyter"
       python-shell-interpreter-args "console --simple-prompt"
@@ -219,7 +193,6 @@
                         (apply f args))))
 
 
-
 ;; auctex - configuration
 (load "auctex.el" nil t t)
 (setq TeX-parse-self t) ; Enable parse on load.
@@ -229,7 +202,6 @@
 (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
 (setq reftex-plug-into-AUCTeX t)
-
 
 ;; -- general config
 
@@ -306,8 +278,6 @@
 (setq mouse-yank-at-click nil)
 
 
-
-
 ;; de jolis noms pour les buffers sur un meme *nom* de fichier
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
@@ -316,20 +286,14 @@
 ;; Alias y pour yes et n pour no
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-
-
 (setq colon-double-space nil)
 (setq sentence-end-double-space nil)
-
-
 
 (put 'narrow-to-region 'disabled nil)
 
 ;(require 'ucs-tables)
 (unify-8859-on-decoding-mode 1)
 (unify-8859-on-encoding-mode 1) 
-
-
 
 
 (global-set-key (kbd "C-s") 'swiper-isearch)
