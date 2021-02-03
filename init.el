@@ -32,6 +32,10 @@
     yaml-mode
     highlight-indent-guides
     auctex
+    lsp-pyright
+    lsp-ivy
+    lsp-treemacs
+    use-package
     )
   )
 
@@ -41,6 +45,11 @@
           (unless (package-installed-p package)
             (package-install package)))
       myPackages)
+
+
+
+
+
 
 (load-theme 'material t)            ;; Load material theme
 
@@ -140,24 +149,25 @@
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
 (add-hook 'markdown-mode-hook 'flyspell-mode)
 
-; LSP for rust
-(require 'rust-mode)
-(require 'lsp-ui)
-
-(require 'company-lsp)
+;; LSP
+(setq lsp-keymap-prefix "C-l")
 (require 'lsp-mode)
+
+;;rust
+(require 'rust-mode)
+
 (add-hook 'rust-mode-hook #'lsp)
 
 ;; tell company to complete on tabs 
 ;;(define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 
 ;;Python
-(require 'elpy)
-(elpy-enable)
-(when (load "flycheck" t t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
-(setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))
+
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp)))) 
 
 ;disable pylint as it is slow
 (setq-default flycheck-disabled-checkers '(python-pylint))
@@ -166,31 +176,48 @@
 (flycheck-add-next-checker 'python-flake8 'python-pyright)
 
 ;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-(setq tab-always-indent 'complete)
+;(setq tab-always-indent 'complete)
 
-(setq python-shell-interpreter "jupyter"
-      python-shell-interpreter-args "console --simple-prompt"
-      python-shell-prompt-detect-failure-warning nil)
-(add-to-list 'python-shell-completion-native-disabled-interpreters
-             "jupyter")
 
-(advice-add 'elpy-shell--insert-and-font-lock
-            :around (lambda (f string face &optional no-font-lock)
-                      (if (not (eq face 'comint-highlight-input))
-                          (funcall f string face no-font-lock)
-                        (funcall f string face t)
-                        (python-shell-font-lock-post-command-hook))))
+;; (require 'elpy)
+;; (elpy-enable)
+;; (when (load "flycheck" t t)
+;;   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+;;   (add-hook 'elpy-mode-hook 'flycheck-mode))
+;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))
 
-(advice-add 'comint-send-input
-            :around (lambda (f &rest args)
-                      (if (eq major-mode 'inferior-python-mode)
-                          (cl-letf ((g (symbol-function 'add-text-properties))
-                                    ((symbol-function 'add-text-properties)
-                                     (lambda (start end properties &optional object)
-                                       (unless (eq (nth 3 properties) 'comint-highlight-input)
-                                         (funcall g start end properties object)))))
-                            (apply f args))
-                        (apply f args))))
+;; ;disable pylint as it is slow
+;; (setq-default flycheck-disabled-checkers '(python-pylint))
+
+;; ;enable both flake8 and pyright
+;; (flycheck-add-next-checker 'python-flake8 'python-pyright)
+
+;; ;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+;; (setq tab-always-indent 'complete)
+
+;; (setq python-shell-interpreter "jupyter"
+;;       python-shell-interpreter-args "console --simple-prompt"
+;;       python-shell-prompt-detect-failure-warning nil)
+;; (add-to-list 'python-shell-completion-native-disabled-interpreters
+;;              "jupyter")
+
+;; (advice-add 'elpy-shell--insert-and-font-lock
+;;             :around (lambda (f string face &optional no-font-lock)
+;;                       (if (not (eq face 'comint-highlight-input))
+;;                           (funcall f string face no-font-lock)
+;;                         (funcall f string face t)
+;;                         (python-shell-font-lock-post-command-hook))))
+
+;; (advice-add 'comint-send-input
+;;             :around (lambda (f &rest args)
+;;                       (if (eq major-mode 'inferior-python-mode)
+;;                           (cl-letf ((g (symbol-function 'add-text-properties))
+;;                                     ((symbol-function 'add-text-properties)
+;;                                      (lambda (start end properties &optional object)
+;;                                        (unless (eq (nth 3 properties) 'comint-highlight-input)
+;;                                          (funcall g start end properties object)))))
+;;                             (apply f args))
+;;                         (apply f args))))
 
 
 ;; auctex - configuration
