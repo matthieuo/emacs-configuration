@@ -26,8 +26,7 @@
     rust-mode
     lsp-ui
     flycheck-rust
-    elpy
-    company-lsp                 
+    company
     blacken
     yaml-mode
     highlight-indent-guides
@@ -175,6 +174,8 @@
 ;enable both flake8 and pyright
 (flycheck-add-next-checker 'python-flake8 'python-pyright)
 
+(setq lsp-enable-file-watchers nil)
+      
 ;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 ;(setq tab-always-indent 'complete)
 
