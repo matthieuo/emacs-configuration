@@ -174,6 +174,10 @@
 ;enable both flake8 and pyright
 (flycheck-add-next-checker 'python-flake8 'python-pyright)
 
+
+;LSP performance
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
 (setq lsp-enable-file-watchers nil)
       
 ;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
