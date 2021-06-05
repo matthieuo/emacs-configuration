@@ -30,8 +30,6 @@
     eldoc
     company
     company-anaconda 
-    ;elpy
-    ;company-lsp                 
     blacken
     yaml-mode
     highlight-indent-guides
@@ -98,7 +96,7 @@
 
 ;;company
 (global-company-mode t)
-(setq company-idle-delay 0.0)
+(setq company-idle-delay 0.1)
 (setq company-show-numbers t)
 (setq company-tooltip-limit 10)
 (setq company-minimum-prefix-length 1)
@@ -107,9 +105,11 @@
 ;; is displayed on top (happens near the bottom of windows)
 (setq company-tooltip-flip-when-above t)
 (setq company-selection-wrap-around t)
-(eval-after-load "company"
-  '(add-to-list 'company-backends 'company-anaconda))
+;(eval-after-load "company"
+;  '(add-to-list 'company-backends 'company-anaconda))
 
+(eval-after-load "company"
+ '(add-to-list 'company-backends '(company-anaconda :with company-capf)))
 
 ;;IVY
 (ivy-mode 1)
@@ -135,7 +135,9 @@
 
 ;yaml
 (require 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\.yml\'" . yaml-mode))
+(add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
+(add-to-list 'auto-mode-alist '("\\.yaml$" . yaml-mode))
+
 (add-hook 'yaml-mode-hook
       '(lambda ()
        (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
@@ -165,13 +167,7 @@
 (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
 (add-hook 'python-mode-hook 'pyvenv-mode)
 (add-hook 'python-mode-hook 'flycheck-mode)
-;; (require 'elpy)
-;; (setq elpy-rpc-python-command "python3.8")
-;; (elpy-enable)
-;; (when (load "flycheck" t t)
-;;   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-;;   (add-hook 'elpy-mode-hook 'flycheck-mode))
-;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))
+
 
 ;disable pylint as it is slow
 (setq-default flycheck-disabled-checkers '(python-pylint))
@@ -181,30 +177,6 @@
 
 ;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 (setq tab-always-indent 'complete)
-
-;; (setq python-shell-interpreter "jupyter"
-;;       python-shell-interpreter-args "console --simple-prompt"
-;;       python-shell-prompt-detect-failure-warning nil)
-;; (add-to-list 'python-shell-completion-native-disabled-interpreters
-;;              "jupyter")
-
-;; (advice-add 'elpy-shell--insert-and-font-lock
-;;             :around (lambda (f string face &optional no-font-lock)
-;;                       (if (not (eq face 'comint-highlight-input))
-;;                           (funcall f string face no-font-lock)
-;;                         (funcall f string face t)
-;;                         (python-shell-font-lock-post-command-hook))))
-
-;; (advice-add 'comint-send-input
-;;             :around (lambda (f &rest args)
-;;                       (if (eq major-mode 'inferior-python-mode)
-;;                           (cl-letf ((g (symbol-function 'add-text-properties))
-;;                                     ((symbol-function 'add-text-properties)
-;;                                      (lambda (start end properties &optional object)
-;;                                        (unless (eq (nth 3 properties) 'comint-highlight-input)
-;;                                          (funcall g start end properties object)))))
-;;                             (apply f args))
-;;                         (apply f args))))
 
 
 ;; auctex - configuration
@@ -332,7 +304,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(auctex centaur-tabs counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust elpy company-lsp autopair)))
+   '(auctex centaur-tabs counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust autopair)))
 
 
 (custom-set-faces
