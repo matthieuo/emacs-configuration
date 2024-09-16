@@ -16,25 +16,24 @@
 (defvar myPackages
   '(better-defaults                 ;; Set up some better Emacs defaults
     material-theme                  ;; Theme
-    projectile
     magit
     neotree
-    ivy
-    counsel
-    swiper
-    powerline
-    rust-mode
-    lsp-ui
-    flycheck-rust
-    company
+    rustic
     blacken
     yaml-mode
     highlight-indent-guides
     auctex
-    lsp-pyright
-    lsp-ivy
-    lsp-treemacs
+    yasnippet
+    yasnippet-snippets
+    markdown-mode
     use-package
+    numpydoc
+    py-isort
+    consult
+    eldoc-box
+    orderless
+    corfu
+    nerd-icons-corfu
     )
   )
 
@@ -46,45 +45,18 @@
       myPackages)
 
 
-
-
-
-
 (load-theme 'material t)            ;; Load material theme
+(global-hl-line-mode t)
 
-(require 'display-line-numbers)
-(defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode org-mode occur-mode)
-  "Major modes on which to disable the linum mode, exempts them from global requirement"
-  :group 'display-line-numbers
-  :type 'list
-  :version "green")
-
-(defun display-line-numbers--turn-on ()
-  "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
-  (if (and
-       (not (member major-mode display-line-numbers-exempt-modes))
-       (not (minibufferp)))
-      (display-line-numbers-mode)))
-
-(global-display-line-numbers-mode)
+(require 'orderless)
+(setq completion-styles '(orderless basic)
+      completion-category-overrides '((file (styles basic partial-completion))))
 
 
-;; NEOTREE, open root consistent with projectile
-(require 'neotree)
-(defun neotree-project-dir ()
-  "Open NeoTree using the git root."
-  (interactive)
-  (let ((project-dir (projectile-project-root))
-	(file-name (buffer-file-name)))
-    (neotree-toggle)
-    (if project-dir
-	(if (neo-global--window-exists-p)
-	    (progn
-	      (neotree-dir project-dir)
-	      (neotree-find file-name)))
-     (message "Could not find git project root."))))
+(require 'numpydoc)
 
-(global-set-key [f8] 'neotree-project-dir)
+;; Display line numbers only when in programming modes
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 
 ;highligt indents
@@ -93,38 +65,16 @@
 (setq highlight-indent-guides-method 'character)
 (setq highlight-indent-guides-responsive 'top)
 
-;; PROJECTILE
-(require 'projectile)
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-(projectile-mode +1)
-(setq projectile-completion-system 'ivy)
 
-;;company
-(setq company-idle-delay 0.0)
-(setq company-show-numbers t)
-(setq company-tooltip-limit 10)
-(setq company-minimum-prefix-length 1)
-(setq company-tooltip-align-annotations t)
-;; invert the navigation direction if the the completion popup-isearch-match
-;; is displayed on top (happens near the bottom of windows)
-(setq company-tooltip-flip-when-above t)
-(setq company-selection-wrap-around t)
+;; snipets
+(use-package yasnippet
+  :ensure
+  :config
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'text-mode-hook 'yas-minor-mode))
 
-;;IVY
-(ivy-mode 1)
-(setq ivy-use-virtual-buffers t)
-(setq ivy-count-format "(%d/%d) ")
 
-;; selection and clipoard
-(delete-selection-mode t)
-(transient-mark-mode t)
-(setq x-select-enable-clipboard t)
-
-;; key binding
-(global-set-key (kbd "RET") 'newline-and-indent)
-(global-set-key (kbd "C-;") 'comment-or-uncomment-region)
-(global-set-key (kbd "M-/") 'hippie-expand)
-(global-set-key (kbd "C-x g") 'magit-status)
 
 ; ----markdown mode
 (autoload 'markdown-mode "markdown-mode.el"
@@ -141,91 +91,36 @@
       '(lambda ()
        (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 
-;;flycheck
-(require 'flycheck)
-(add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
 
 ;;flyspell
 (setq flyspell-default-dictionary "english") 
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
 (add-hook 'markdown-mode-hook 'flyspell-mode)
 
-;; LSP
-(setq lsp-keymap-prefix "C-l")
-(require 'lsp-mode)
+
 
 ;;rust
-(require 'rust-mode)
 
-(add-hook 'rust-mode-hook #'lsp)
+(use-package rustic)
 
-;; tell company to complete on tabs 
-;;(define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 
 ;;Python
 
-(use-package lsp-pyright
-  :ensure t
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp)))) 
 
-;disable pylint as it is slow
-(setq-default flycheck-disabled-checkers '(python-pylint))
+(setq lsp-pyright-use-library-code-for-types t) ;; set this to nil if getting too many false positive type errors
+(setq lsp-pyright-stub-path (concat (getenv "HOME") "/divers/python-type-stubs")) ;; example
 
-;enable both flake8 and pyright
-(flycheck-add-next-checker 'python-flake8 'python-pyright)
 
 
 ;LSP performance
 (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
-(setq lsp-enable-file-watchers nil)
-(setq lsp-log-io nil) ; if set to true can cause a performance hit
+
       
-;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-;(setq tab-always-indent 'complete)
+(require 'py-isort)
+(add-hook 'before-save-hook 'py-isort-before-save)
 
 
-;; (require 'elpy)
-;; (elpy-enable)
-;; (when (load "flycheck" t t)
-;;   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-;;   (add-hook 'elpy-mode-hook 'flycheck-mode))
-;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))
-
-;; ;disable pylint as it is slow
-;; (setq-default flycheck-disabled-checkers '(python-pylint))
-
-;; ;enable both flake8 and pyright
-;; (flycheck-add-next-checker 'python-flake8 'python-pyright)
-
-;; ;(define-key python-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-;; (setq tab-always-indent 'complete)
-
-;; (setq python-shell-interpreter "jupyter"
-;;       python-shell-interpreter-args "console --simple-prompt"
-;;       python-shell-prompt-detect-failure-warning nil)
-;; (add-to-list 'python-shell-completion-native-disabled-interpreters
-;;              "jupyter")
-
-;; (advice-add 'elpy-shell--insert-and-font-lock
-;;             :around (lambda (f string face &optional no-font-lock)
-;;                       (if (not (eq face 'comint-highlight-input))
-;;                           (funcall f string face no-font-lock)
-;;                         (funcall f string face t)
-;;                         (python-shell-font-lock-post-command-hook))))
-
-;; (advice-add 'comint-send-input
-;;             :around (lambda (f &rest args)
-;;                       (if (eq major-mode 'inferior-python-mode)
-;;                           (cl-letf ((g (symbol-function 'add-text-properties))
-;;                                     ((symbol-function 'add-text-properties)
-;;                                      (lambda (start end properties &optional object)
-;;                                        (unless (eq (nth 3 properties) 'comint-highlight-input)
-;;                                          (funcall g start end properties object)))))
-;;                             (apply f args))
-;;                         (apply f args))))
 
 
 ;; auctex - configuration
@@ -238,7 +133,8 @@
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
 (setq reftex-plug-into-AUCTeX t)
 
-;; -- general config
+
+
 
 (setq-default font-lock-maximum-decoration t)
 
@@ -252,22 +148,7 @@
 ;pour suprimer selection avec touche
 (delete-selection-mode t)
 
-;; ============================
-;; Set up which modes to use for which file extensions
-;; ============================
-(setq auto-mode-alist
-      (append
-       '(
-         ("\\.h$"             . c++-mode)
-	 ("\\.cu$"            . c++-mode)
-         ("\\.dps$"           . pascal-mode)
-         ("\\.py$"            . python-mode)
-         ("\\.Xdefaults$"     . xrdb-mode)
-         ("\\.Xenvironment$"  . xrdb-mode)
-         ("\\.Xresources$"    . xrdb-mode)
-         ("\\.tei$"           . xml-mode)
-         ("\\.php$"           . php-mode)
-         ) auto-mode-alist))
+
 
 
 ;;##########################################################
@@ -278,6 +159,8 @@
 
 (tool-bar-mode -1)
 
+
+(setopt treesit-font-lock-level 13)
 
 (setq display-time-day-and-date t)
 (setq display-time-24hr-format t)
@@ -326,40 +209,199 @@
 
 (put 'narrow-to-region 'disabled nil)
 
-;(require 'ucs-tables)
-(unify-8859-on-decoding-mode 1)
-(unify-8859-on-encoding-mode 1) 
 
 
-(global-set-key (kbd "C-s") 'swiper-isearch)
-(global-set-key (kbd "M-x") 'counsel-M-x)
-(global-set-key (kbd "C-x C-f") 'counsel-find-file)
-(global-set-key (kbd "M-y") 'counsel-yank-pop)
-;(global-set-key (kbd "<f1> f") 'counsel-describe-function)
-;(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-;(global-set-key (kbd "<f1> l") 'counsel-find-library)
-;(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-;(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-;(global-set-key (kbd "<f2> j") 'counsel-set-variable)
-(global-set-key (kbd "C-x b") 'ivy-switch-buffer)
-(global-set-key (kbd "C-c v") 'ivy-push-view)
-(global-set-key (kbd "C-c V") 'ivy-pop-view)
+
+	; --- CONSULT
+(use-package consult
+  ;; Replace bindings. Lazily loaded by `use-package'.
+  :bind (;; C-c bindings in `mode-specific-map'
+         ("C-c M-x" . consult-mode-command)
+         ("C-c h" . consult-history)
+         ("C-c k" . consult-kmacro)
+         ("C-c m" . consult-man)
+         ("C-c i" . consult-info)
+         ([remap Info-search] . consult-info)
+         ;; C-x bindings in `ctl-x-map'
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
+         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ;; M-g bindings in `goto-map'
+         ("M-g e" . consult-compile-error)
+         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s bindings in `search-map'
+         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+         ("M-s c" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+         ;; Minibuffer history
+         :map minibuffer-local-map
+         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Optionally configure the register formatting. This improves the register
+  ;; preview for `consult-register', `consult-register-load',
+  ;; `consult-register-store' and the Emacs built-ins.
+  (setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; "C-+"
+
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+)
+
+; --- end CONSULT
+
+(use-package vertico
+  :ensure t
+  :custom
+  (vertico-cycle t)
+  (read-buffer-completion-ignore-case t)
+  (read-file-name-completion-ignore-case t)
+  (completion-styles '(basic substring partial-completion flex))
+  :init
+  (vertico-mode))
+
+;; Improve the accessibility of Emacs documentation by placing
+;; descriptions directly in your minibuffer. Give it a try:
+;; "M-x find-file".
+(use-package marginalia
+  :after vertico
+  :ensure t
+  :init
+  (marginalia-mode))
 
 
-(global-set-key "\C-t" 'transpose-sexps)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(auctex centaur-tabs counsel swiper magit rust-mode projectile powerline neotree material-theme lsp-ui ivy imenu-list flycheck-rust elpy company-lsp autopair)))
 
+;; Adds intellisense-style code completion at point that works great
+;; with LSP via Eglot. You'll likely want to configure this one to
+;; match your editing preferences, there's no one-size-fits-all
+;; solution.
+(use-package corfu
+  :ensure t
+  :init
+  (global-corfu-mode)
+  :custom
+  (corfu-auto t)
+  ;; You may want to play with delay/prefix/styles to suit your preferences.
+  (corfu-auto-delay 0.0)
+  (corfu-auto-prefix 1)
+  (completion-styles '(basic)))
+
+(add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+
+;; Adds LSP support. Note that you must have the respective LSP
+;; server installed on your machine to use it with Eglot. e.g.
+;; rust-analyzer to use Eglot with `rust-mode'.
+(use-package eglot
+  :ensure t
+  :bind (("s-<mouse-1>" . eglot-find-implementation)
+         ("C-c ." . eglot-code-action-quickfix))
+  ;; Add your programming modes here to automatically start Eglot,
+  ;; assuming you have the respective LSP server installed.
+  :config
+  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
+  :hook
+  (python-mode . eglot-ensure))
+
+
+;; Add extra context to Emacs documentation to help make it easier to
+;; search and understand. This configuration uses the keybindings 
+;; recommended by the package author.
+(use-package helpful
+  :ensure t
+  :bind (("C-h f" . #'helpful-callable)
+         ("C-h v" . #'helpful-variable)
+         ("C-h k" . #'helpful-key)
+         ("C-c C-d" . #'helpful-at-point)
+         ("C-h F" . #'helpful-function)
+         ("C-h C" . #'helpful-command)))
+
+
+(use-package eldoc-box
+  :after eglot
+  :hook ((eglot-managed-mode . eldoc-box-hover-at-point-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Source Code Pro" :foundry "ADBO" :slant normal :weight normal :height 91 :width normal))))
+ '(default ((t (:family "Source Code Pro" :foundry "ADBO" :slant normal :weight normal :height 100 :width normal))))
  '(line-number-current-line ((t (:inherit default :foreground "chartreuse")))))
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(eglot helpful corfu marginalia vertico nerd-icons-corfu orderless eldoc-box consult py-isort numpydoc yasnippet-snippets yasnippet auctex highlight-indent-guides yaml-mode blacken rustic neotree magit material-theme better-defaults)))
