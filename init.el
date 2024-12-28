@@ -48,9 +48,7 @@
 (load-theme 'material t)            ;; Load material theme
 (global-hl-line-mode t)
 
-(require 'orderless)
-(setq completion-styles '(orderless basic)
-      completion-category-overrides '((file (styles basic partial-completion))))
+
 
 
 (require 'numpydoc)
@@ -369,9 +367,9 @@
   ;; assuming you have the respective LSP server installed.
   :config
   (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
+  (add-to-list 'eglot-server-programs '(c++-mode . ("clangd")))
   :hook
-  (python-mode . eglot-ensure))
-
+  (python-mode . eglot-ensure) (c++-mode . eglot-ensure))
 
 ;; Add extra context to Emacs documentation to help make it easier to
 ;; search and understand. This configuration uses the keybindings 
@@ -389,6 +387,12 @@
 (use-package eldoc-box
   :after eglot
   :hook ((eglot-managed-mode . eldoc-box-hover-at-point-mode)))
+
+
+(require 'orderless)
+(setq completion-styles '(orderless basic)
+      completion-category-overrides '((file (styles basic partial-completion))))
+
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
